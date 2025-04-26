@@ -1,0 +1,24 @@
+{
+    "validCredentials": {
+        "admin": {
+            "username": "ThamAdmin",
+            "password": "Admin@1234"
+        },
+        "employee": {
+            "username": "ThamESS0",
+            "password": "Admin@1234"
+        }
+    },
+    "invalidCredentials": {
+        "username": "thamnguyen",
+        "password": "123"
+    },
+    "missingUsername": {
+        "username": "",
+        "password": "123"
+    },
+    "missingPassword": {
+        "username": "thamnguyen",
+        "password": ""
+    }
+}

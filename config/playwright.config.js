@@ -1,5 +1,5 @@
 const { defineConfig } = require('@playwright/test');
-const envConfig = require("./config/env.config");
+const envConfig = require("./env.config");
 const { currentEnv,BASE_URL } = envConfig;
 
 module.exports = defineConfig({

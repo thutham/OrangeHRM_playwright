@@ -27,7 +27,7 @@ const test = baseTest.extend({
 async function createPage(context, url) {
   const page = await context.newPage();
   if (url) {
-    await page.goto(url);
+    await page.goto(url, { waitUntil: 'load' });
   }
   return page;
 }
@@ -72,7 +72,6 @@ function sanitizeFileName(title) {
  */
 async function clearPageState(page) {
   const context = page.context();
-  await context.clearCookies();
   await context.clearPermissions();
   await page.evaluate(() => {
     localStorage.clear();
