@@ -11,6 +11,7 @@ on:
 
 jobs:
   test:
+    if: ${{ github.event_name == 'workflow_dispatch' }} # Runs only on manual trigger
     timeout-minutes: 60
     runs-on: ubuntu-latest
 
