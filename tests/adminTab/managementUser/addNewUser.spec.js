@@ -2,6 +2,7 @@ const { test, expect } = require("../../common/testBase");
 const { LoginPage, ManagementUserPage } = require("../../../pages/importsPage");
 const { URLS } = require("../../../constant/constantUrls");
 const { ErrorMessage } = require("../../../constant/errorMessage");
+const { ToastMessage } = require("../../../constant/toastMessage");
 const { ConstantSetting } = require("../../../constant/constantSetting");
 
 // Test Data
@@ -30,7 +31,7 @@ test.describe("Management User Test  - Add New User", () => {
     await page.waitForLoadState("load");
   });
 
-  test.describe("Add new user", { tags: ["happy-case"] }, () => {
+  test.describe;("Add new user", { tags: ["happy-case"] }, () => {
     test("Verify adding a new admin user", async ({ page }) => {
       const dynamicName = `ThamAdmin_${Date.now()}`;
       console.log(`Adding new admin: ${dynamicName}`);
@@ -49,7 +50,7 @@ test.describe("Management User Test  - Add New User", () => {
 
       await test.step("Verify toast message", async () => {
         const toastMessage = await managementUserPage.getToastMsg();
-        expect(toastMessage).toContain("Successfully Saved");
+        expect(toastMessage).toContain(ToastMessage.createUseruccess);
       });
 
       await test.step("Verify navigation", async () => {

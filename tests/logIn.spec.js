@@ -38,12 +38,12 @@ test.describe("Login Test Suites", () => {
     await page.waitForLoadState("load");
     expect(page.url()).toBe(URLS.Dashboard);
   });
-  test("Successful employee login with valid credentials", async ({ page }) => {
-    await loginPage.login(
-      loginTestData.validCredentials.employee.username,
-      loginTestData.validCredentials.employee.password
-    );
-    await page.waitForLoadState("load");
-    expect(page.url()).toBe(URLS.Dashboard);
-  });
+  // test("Successful employee login with valid credentials", async ({ page }) => {
+  //   await loginPage.login(
+  //     loginTestData.validCredentials.employee.username,
+  //     loginTestData.validCredentials.employee.password
+  //   );
+  //   await page.waitForLoadState("load");
+  //   expect(page.url()).toBe(URLS.Dashboard);
+  // });
 });

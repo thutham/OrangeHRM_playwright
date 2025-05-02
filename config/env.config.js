@@ -1,7 +1,7 @@
 // env.config.js
 const environments = {
   development: {
-    BASE_URL: 'http://localhost:8081/web/index.php',
+    BASE_URL: 'http://localhost:8080/web/index.php',
   },
   staging: {
     BASE_URL: 'https://staging.example.com',

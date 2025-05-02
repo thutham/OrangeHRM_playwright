@@ -1,5 +1,6 @@
 //userManagement.js
 const { TIMEOUT } = require("dns");
+const { expect } = require("../../tests/common/testBase");
 const AdminIndexPage = require("./adminIndexPage"); // Import AdminPage
 
 class UserManagementPage extends AdminIndexPage {
@@ -38,8 +39,45 @@ class UserManagementPage extends AdminIndexPage {
       saveButton: page.locator('button[type="submit"]'),
       cancelButton: page.locator('button[type="button"]'),
     };
+    this.UserTableSection = {
+      userTable: page.locator(".oxd-table"),
+      selectAll: page.locator(".bi-dash .oxd-checkbox-input-icon"),
+      userRow: page.locator("//div[contains(@class, 'oxd-table-row')]"),
+      deleteBtn: page.locator(".oxd-icon bi-trashN"),
+    };
+    this.deletePopup = {
+      cancelBtn: page.locator('button:has-text("No, Cancel")'),
+      XBtn: page.locator(""),
+      submitBtn: page.locator('button:has-text(" Yes, Delete ")'),
+    };
+  }
+  //Delete User
+  async checkUserExistence(userName, shouldExist = true) {
+    const userRowLocator = this.page.locator(
+      `//div[contains(@class, 'oxd-table-row oxd-table-row--with-border')][.//div[text()="${userName}"]]`
+    );
+
+    if (shouldExist) {
+      await expect(userRowLocator).toHaveCount(1);
+    } else {
+      await expect(userRowLocator).toHaveCount(0); 
+    }
+
+    return userRowLocator; 
+  }
+  async clickDeleteBtn(userName) {
+    console.log("Click  Delete User Button...");
+    const userRow = await this.checkUserExistence(userName, true); // Await the locator function
+    await userRow.locator("//i[contains(@class, 'oxd-icon bi-trash')]").click();
+  }
+  async cancelDeteleUser() {
+    await this.deletePopup.cancelBtn.click();
+  }
+  async confirmDeteleUser() {
+    await this.deletePopup.submitBtn.click();
   }
 
+  //Search and Add new
   async navigateToUsers() {
     await this.openMenuTab("userManagementTab", "usermenu");
   }
