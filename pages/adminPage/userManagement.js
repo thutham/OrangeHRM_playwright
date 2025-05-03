@@ -1,5 +1,4 @@
 //userManagement.js
-const { TIMEOUT } = require("dns");
 const { expect } = require("../../tests/common/testBase");
 const AdminIndexPage = require("./adminIndexPage"); // Import AdminPage
 
@@ -20,8 +19,6 @@ class UserManagementPage extends AdminIndexPage {
       searchBtn: page.locator('button:has-text("Search")'),
       resetBtn: page.locator('button:has-text("Reset")'),
     };
-
-    this.userTable = page.locator("table.oxd-table");
     this.addUserSection = {
       addBtn: page.locator('//button[contains(., "Add")]'),
       userRoleSelectArrow: page.locator(
@@ -39,6 +36,23 @@ class UserManagementPage extends AdminIndexPage {
       saveButton: page.locator('button[type="submit"]'),
       cancelButton: page.locator('button[type="button"]'),
     };
+    this.editUserSection = {
+      userRoleSelectArrow: page.locator(
+        '//div[label[contains(text(), "User Role")]]/following-sibling::div//i'
+      ),
+      employeeNameInput: page.locator('input[placeholder="Type for hints..."]'),
+      statusSelectArrow: page.locator(
+        '//div[label[contains(text(), "Status")]]/following-sibling::div//i'
+      ),
+      userNameInput: page.locator(
+        '//div[label[contains(text(), "Username")]]/following-sibling::div/input'
+      ),
+      changePassworkCheckbox: page.locator(".oxd-checkbox-input-icon"),
+      passwordInput: page.locator('(//input[@type="password"])[1]'),
+      confirmPasswordInput: page.locator('(//input[@type="password"])[2]'),
+      saveButton: page.locator('button[type="submit"]'),
+      cancelButton: page.locator('button[type="button"]'),
+    };
     this.UserTableSection = {
       userTable: page.locator(".oxd-table"),
       selectAll: page.locator(".bi-dash .oxd-checkbox-input-icon"),
@@ -51,47 +65,51 @@ class UserManagementPage extends AdminIndexPage {
       submitBtn: page.locator('button:has-text(" Yes, Delete ")'),
     };
   }
-  //Delete User
+  //Common
+  async navigateToUsers() {
+    await this.openMenuTab("userManagementTab", "usermenu");
+  }
+  //User Table
   async checkUserExistence(userName, shouldExist = true) {
     const userRowLocator = this.page.locator(
       `//div[contains(@class, 'oxd-table-row oxd-table-row--with-border')][.//div[text()="${userName}"]]`
     );
-
     if (shouldExist) {
       await expect(userRowLocator).toHaveCount(1);
     } else {
-      await expect(userRowLocator).toHaveCount(0); 
+      await expect(userRowLocator).toHaveCount(0);
     }
-
-    return userRowLocator; 
+    return userRowLocator;
   }
-  async clickDeleteBtn(userName) {
-    console.log("Click  Delete User Button...");
-    const userRow = await this.checkUserExistence(userName, true); // Await the locator function
-    await userRow.locator("//i[contains(@class, 'oxd-icon bi-trash')]").click();
+  async checkUserInformation(
+    userName,
+    expectRole,
+    expectEmployeeName,
+    expectStatus
+  ) {
+    const userRow = await this.checkUserExistence(userName, true);
+    const role = await userRow
+      .locator(".oxd-padding-cell:nth-child(3)")
+      .innerText();
+    const employeeName = await userRow
+      .locator(".oxd-padding-cell:nth-child(4)")
+      .innerText();
+    const status = await userRow
+      .locator(".oxd-padding-cell:nth-child(5)")
+      .innerText();
+    expect(role).toBe(expectRole);
+    expect(employeeName).toBe(expectEmployeeName);
+    expect(status).toBe(expectStatus);
   }
-  async cancelDeteleUser() {
-    await this.deletePopup.cancelBtn.click();
-  }
-  async confirmDeteleUser() {
-    await this.deletePopup.submitBtn.click();
-  }
-
-  //Search and Add new
-  async navigateToUsers() {
-    await this.openMenuTab("userManagementTab", "usermenu");
-  }
-  async clickAddNewUserBtn() {
-    await this.addUserSection.addBtn.click();
-  }
+  //User Form
   async fillUserName(section, userName) {
     await this[section].userNameInput.fill(userName);
   }
   async fillEmployeeName(section, employeeName) {
     await this[section].employeeNameInput.fill(employeeName);
   }
-  async selectEmployeeName(page, employeeName) {
-    await page.waitForSelector(".oxd-autocomplete-dropdown");
+  async selectEmployeeName(employeeName) {
+    await this.page.waitForSelector(".oxd-autocomplete-dropdown");
     await this.page
       .locator(
         `.oxd-autocomplete-dropdown .oxd-autocomplete-option:has-text("${employeeName}")`
@@ -101,54 +119,41 @@ class UserManagementPage extends AdminIndexPage {
   async selectUserRole(section, role) {
     if (!role || role.trim() === "") {
       return null;
-    } //enhance empty case
+    } // Enhance empty case
+
     await this[section].userRoleSelectArrow.click();
-    await this.page
-      .locator(
-        `.oxd-select-dropdown .oxd-select-option:has(span:has-text("${role}"))`
-      )
-      .click();
+
+    // Select the correct option
+    const roleOption =
+      role === "-- Select --"
+        ? `.oxd-select-dropdown .oxd-select-option:has-text("${role}")`
+        : `.oxd-select-dropdown .oxd-select-option:has(span:has-text("${role}"))`;
+    await this.page.locator(roleOption).click();
   }
+
   async selectStatus(section, status) {
     if (!status || status.trim() === "") {
       return null;
     } //enhance empty case
     await this[section].statusSelectArrow.click();
-    await this.page
-      .locator(
-        `.oxd-select-dropdown .oxd-select-option:has(span:has-text("${status}"))`
-      )
-      .click();
+    // Select the correct option
+    const statusOption =
+      status === "-- Select --"
+        ? `.oxd-select-dropdown .oxd-select-option:has-text("${status}")`
+        : `.oxd-select-dropdown .oxd-select-option:has(span:has-text("${status}"))`;
+
+    await this.page.locator(statusOption).click();
   }
-  async fillPassword(password) {
-    await this.addUserSection.passwordInput.fill(password);
+  async fillPassword(section, password) {
+    await this[section].passwordInput.fill(password);
   }
-  async fillConfirmPassword(password) {
-    await this.addUserSection.confirmPasswordInput.fill(password);
+  async fillConfirmPassword(section, password) {
+    await this[section].confirmPasswordInput.fill(password);
   }
-  async clickSaveBtn() {
-    await this.addUserSection.saveButton.click();
+  async clickSaveBtn(section) {
+    await this[section].saveButton.click();
   }
-  async createNewUser(
-    page,
-    userName,
-    role,
-    status,
-    employeeName,
-    password,
-    confirmPassword
-  ) {
-    await this.fillUserName("addUserSection", userName);
-    await this.selectUserRole("addUserSection", role);
-    await this.selectStatus("addUserSection", status);
-    await this.fillEmployeeName("addUserSection", employeeName);
-    if (employeeName != "") {
-      await this.selectEmployeeName(page, employeeName);
-    }
-    await this.fillPassword(password);
-    await this.fillConfirmPassword(confirmPassword);
-    await this.clickSaveBtn();
-  }
+
   async getPasswordFieldErrorMsg(hardTimeout) {
     try {
       await this.page.waitForSelector(".oxd-input-field-error-message", {
@@ -175,6 +180,83 @@ class UserManagementPage extends AdminIndexPage {
         `Failed to retrieve password error message: ${error.message}`
       );
     }
+  }
+  //Delete User
+  async clickDeleteBtn(userName) {
+    console.log("Click Delete User Button...");
+    const userRow = await this.checkUserExistence(userName, true); // Await the locator function
+    await userRow.locator("//i[contains(@class, 'oxd-icon bi-trash')]").click();
+  }
+  async cancelDeteleUser() {
+    await this.deletePopup.cancelBtn.click();
+  }
+  async confirmDeteleUser() {
+    await this.deletePopup.submitBtn.click();
+  }
+  //Edit
+  async clickEditBtn(userName) {
+    const userRow = await this.checkUserExistence(userName, true); // Await the locator function
+    await userRow
+      .locator("//i[contains(@class, 'oxd-icon bi-pencil-fill')]")
+      .click();
+  }
+  async toggleChangePassword(shouldChange) {
+    const checkbox = await this.editUserSection.changePassworkCheckbox;
+    if (shouldChange) {
+      await checkbox.click();
+    }
+  }
+  async editUser(
+    userName,
+    role,
+    status,
+    employeeName,
+    password,
+    confirmPassword,
+    shouldCheck
+  ) {
+    console.log("Edit User Information...");
+
+    await this.fillUserName("editUserSection", userName);
+    await this.selectUserRole("editUserSection", role);
+    await this.selectStatus("editUserSection", status);
+    await this.fillEmployeeName("editUserSection", employeeName);
+
+    if (employeeName !== "") {
+      await this.selectEmployeeName(employeeName);
+    }
+    const isChecked =
+      await this.editUserSection.changePassworkCheckbox.isChecked();
+    if (shouldCheck === true && !isChecked) {
+      await this.toggleChangePassword(true);
+      await this.fillPassword("editUserSection", password);
+      await this.fillConfirmPassword("editUserSection", confirmPassword);
+    }
+    await this.clickSaveBtn("editUserSection");
+  }
+
+  //Add User
+  async clickAddNewUserBtn() {
+    await this.addUserSection.addBtn.click();
+  }
+  async createNewUser(
+    userName,
+    role,
+    status,
+    employeeName,
+    password,
+    confirmPassword
+  ) {
+    await this.fillUserName("addUserSection", userName);
+    await this.selectUserRole("addUserSection", role);
+    await this.selectStatus("addUserSection", status);
+    await this.fillEmployeeName("addUserSection", employeeName);
+    if (employeeName != "") {
+      await this.selectEmployeeName(employeeName);
+    }
+    await this.fillPassword("addUserSection", password);
+    await this.fillConfirmPassword("addUserSection", confirmPassword);
+    await this.clickSaveBtn("addUserSection");
   }
 }
 

@@ -62,7 +62,7 @@ async function deleteAdminUserOnDB(userName) {
     );
 
     if (userCheck.length === 0) {
-      console.error(`🚨 Error: User '${userName}' does not exist in ohrm_user`);
+      console.error(`Error: User '${userName}' does not exist in ohrm_user`);
       return;
     }
 
@@ -71,7 +71,7 @@ async function deleteAdminUserOnDB(userName) {
 
     console.log(`Successfully deleted user on DB: ${userName}`);
   } catch (error) {
-    console.error("🚨 Database error:", error.message);
+    console.error("Database error:", error.message);
   } finally {
     await connection.end();
   }

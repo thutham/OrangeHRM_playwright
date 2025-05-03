@@ -1,120 +1,119 @@
 const { test, expect } = require("../../common/testBase");
 const { LoginPage, ManagementUserPage } = require("../../../pages/importsPage");
-const { URLS } = require("../../../constant/constantUrls");
-const { ErrorMessage } = require("../../../constant/errorMessage");
 const { ToastMessage } = require("../../../constant/toastMessage");
+const { ErrorMessage } = require("../../../constant/errorMessage");
 const { ConstantSetting } = require("../../../constant/constantSetting");
+
+const {
+  createAdminUserOnDB,
+  deleteAdminUserOnDB,
+} = require("../../../utils/dbHelper");
 
 // Test Data
 const loginTestData = require("../../../testData/loginData.json");
-const registrationInfo = require("../../../testData/userData.json");
+const updateUserInformation = require("../../../testData/userData.json");
+const passwordData = require("../../../testData/passwordData.json");
 
-test.describe("Management User Test  - Add New User", () => {
-  let loginPage, managementUserPage;
+test.describe("Management User Test  - Edit User", () => {
+  let loginPage, managementUserPage, userName, password, userNameUpdate;
 
   // Setup before each test
   test.beforeEach(async ({ page }) => {
     loginPage = new LoginPage(page);
     managementUserPage = new ManagementUserPage(page);
-
+    userName = `ThamAdmin_${Date.now()}`;
+    password = "Admin@1234";
+    //Create user in Database
+    await createAdminUserOnDB(userName, password);
     await loginPage.login(
       loginTestData.validCredentials.admin.username,
       loginTestData.validCredentials.admin.password
     );
-
-    await page.waitForLoadState("networkidle"); // Ensure full page load
+    await page.waitForLoadState("networkidle");
     await managementUserPage.clickAdminMenu();
     console.log("Navigating to User Management...");
     await managementUserPage.navigateToUsers();
     await page.waitForLoadState("load");
-    await managementUserPage.clickAddNewUserBtn();
-    await page.waitForLoadState("load");
+    console.log("Navigating to User Edit Page...");
+    await managementUserPage.clickEditBtn(userName);
+    await page.waitForLoadState("networkidle");
   });
-
-  test.describe;("Add new user", { tags: ["happy-case"] }, () => {
-    test("Verify adding a new admin user", async ({ page }) => {
-      const dynamicName = `ThamAdmin_${Date.now()}`;
-      console.log(`Adding new admin: ${dynamicName}`);
-
-      await test.step("Fill user details", async () => {
-        await managementUserPage.createNewUser(
-          dynamicName,
-          registrationInfo.newUserInformation.admin.role,
-          registrationInfo.newUserInformation.admin.status,
-          registrationInfo.newUserInformation.admin.employeeName,
-          registrationInfo.newUserInformation.admin.password,
-          registrationInfo.newUserInformation.admin.confirmPassword
+  test.describe("Edit new user", { tags: ["happy-case"] }, () => {
+    test.beforeEach(async () => {
+      userNameUpdate = `ThamESS_${Date.now()}`;
+    });
+    test.afterEach(async () => {
+      await deleteAdminUserOnDB(userNameUpdate);
+    });
+    test("Edit all information", async () => {
+      await test.step("Edit user", async () => {
+        await managementUserPage.editUser(
+          userNameUpdate,
+          updateUserInformation.updateUserInformation.role,
+          updateUserInformation.updateUserInformation.status,
+          updateUserInformation.updateUserInformation.employeeName,
+          updateUserInformation.updateUserInformation.password,
+          updateUserInformation.updateUserInformation.confirmPassword,
+          false
         );
       });
-
       await test.step("Verify toast message", async () => {
         const toastMessage = await managementUserPage.getToastMsg();
-        expect(toastMessage).toContain(ToastMessage.createUseruccess);
+        expect(toastMessage).toContain(ToastMessage.updateUserSuccess);
       });
-
-      await test.step("Verify navigation", async () => {
-        await page.waitForURL(URLS.Admin.userManagement.viewSystemUsers);
-        expect(await page.url()).toBe(
-          URLS.Admin.userManagement.viewSystemUsers
+      await test.step("Verify account is displayed on list with correct data", async () => {
+        await managementUserPage.checkUserInformation(
+          userNameUpdate,
+          updateUserInformation.updateUserInformation.role,
+          updateUserInformation.updateUserInformation.employeeName,
+          updateUserInformation.updateUserInformation.status
         );
       });
     });
-    test("Verify adding a new ESS user", async ({ page }) => {
-      const dynamicName = `ThamEmployee_${Date.now()}`;
-      console.log(`Adding new ESS user: ${dynamicName}`);
-
-      await test.step("Fill user details", async () => {
-        await managementUserPage.createNewUser(
-          dynamicName,
-          registrationInfo.newUserInformation.employee.role,
-          registrationInfo.newUserInformation.employee.status,
-          registrationInfo.newUserInformation.employee.employeeName,
-          registrationInfo.newUserInformation.employee.password,
-          registrationInfo.newUserInformation.employee.confirmPassword
+    test("Edit all user information and password", async () => {
+      await test.step("Edit user", async () => {
+        await managementUserPage.editUser(
+          userNameUpdate,
+          updateUserInformation.updateUserInformation.role,
+          updateUserInformation.updateUserInformation.status,
+          updateUserInformation.updateUserInformation.employeeName,
+          updateUserInformation.updateUserInformation.password,
+          updateUserInformation.updateUserInformation.confirmPassword,
+          true
         );
       });
-
       await test.step("Verify toast message", async () => {
         const toastMessage = await managementUserPage.getToastMsg();
-        expect(toastMessage).toContain("Successfully Saved");
+        expect(toastMessage).toContain(ToastMessage.updateUserSuccess);
       });
-
-      await test.step("Verify navigation", async () => {
-        await page.waitForURL(URLS.Admin.userManagement.viewSystemUsers);
-        expect(await page.url()).toBe(
-          URLS.Admin.userManagement.viewSystemUsers
+      await test.step("Verify account is displayed on list with correct data", async () => {
+        await managementUserPage.checkUserInformation(
+          userNameUpdate,
+          updateUserInformation.updateUserInformation.role,
+          updateUserInformation.updateUserInformation.employeeName,
+          updateUserInformation.updateUserInformation.status
         );
       });
     });
   });
   test.describe("Fields Validation", { tags: ["validation-case"] }, () => {
+    test.afterEach(async () => {
+      await deleteAdminUserOnDB(userName);
+    });
     test.describe("User Role Validation", () => {
-      test("Validation on empty user role", async ({ page }) => {
-        console.log("Testing empty username validation...");
-        await managementUserPage.createNewUser(
-          `InvalidUser_${Date.now()}`,
-          "",
-          registrationInfo.newUserInformation.employee.status,
-          registrationInfo.newUserInformation.employee.employeeName,
-          registrationInfo.newUserInformation.employee.password,
-          registrationInfo.newUserInformation.employee.confirmPassword
+      test("Validation on empty user role", async ({}) => {
+        await managementUserPage.selectUserRole(
+          "editUserSection",
+          "-- Select --"
         );
-
         const errorMessage = await managementUserPage.getFieldErrorMsg();
         await expect(errorMessage).toBe(ErrorMessage.emptyFieldError);
       });
     });
     test.describe("Employee Name Validation", () => {
       test("Validation on empty employee name", async ({ page }) => {
-        console.log("Testing empty employee validation...");
-        await managementUserPage.createNewUser(
-          `InvalidUser_${Date.now()}`,
-          registrationInfo.newUserInformation.employee.role,
-          registrationInfo.newUserInformation.employee.status,
-          "",
-          registrationInfo.newUserInformation.employee.password,
-          registrationInfo.newUserInformation.employee.confirmPassword
-        );
+        await managementUserPage.fillEmployeeName("editUserSection", "");
+        await page.click("body");
         const errorMessage = await managementUserPage.getFieldErrorMsg();
         await expect(errorMessage).toBe(ErrorMessage.emptyFieldError);
       });
@@ -122,7 +121,7 @@ test.describe("Management User Test  - Add New User", () => {
         console.log("Testing on invalid employee validation...");
         const invalidEmployee = "000";
         await managementUserPage.fillEmployeeName(
-          "addUserSection",
+          "editUserSection",
           invalidEmployee
         );
         await page.click("body");
@@ -133,41 +132,26 @@ test.describe("Management User Test  - Add New User", () => {
     test.describe("User Status Validation", () => {
       test("Validation on empty user status", async ({ page }) => {
         console.log("Testing empty status validation...");
-        await managementUserPage.createNewUser(
-          `InvalidUser_${Date.now()}`,
-          registrationInfo.newUserInformation.employee.role,
-          "",
-          registrationInfo.newUserInformation.employee.employeeName,
-          registrationInfo.newUserInformation.employee.password,
-          registrationInfo.newUserInformation.employee.confirmPassword
+        await managementUserPage.selectStatus(
+          "editUserSection",
+          "-- Select --"
         );
-
         const errorMessage = await managementUserPage.getFieldErrorMsg();
         await expect(errorMessage).toBe(ErrorMessage.emptyFieldError);
       });
     });
     test.describe("UserName Validation", () => {
-      test("Validation on empty password", async ({ page }) => {
-        console.log("Testing empty username validation...");
-        await managementUserPage.createNewUser(
-          "",
-          registrationInfo.newUserInformation.employee.role,
-          registrationInfo.newUserInformation.employee.status,
-          registrationInfo.newUserInformation.employee.employeeName,
-          registrationInfo.newUserInformation.employee.password,
-          registrationInfo.newUserInformation.employee.confirmPassword
-        );
-
+      test("Validation on empty password", async () => {
+        await managementUserPage.fillUserName("editUserSection", "");
         const errorMessage = await managementUserPage.getFieldErrorMsg();
-
         await expect(errorMessage).toBe(ErrorMessage.emptyFieldError);
       });
 
-      test("Validation on invalid username - min length", async ({}) => {
+      test("Validation on invalid username - min length", async () => {
         console.log("Testing invalid username validation - min length...");
         const invalidUsername = "min";
         await managementUserPage.fillUserName(
-          "addUserSection",
+          "editUserSection",
           invalidUsername
         );
         const errorMessage = await managementUserPage.getFieldErrorMsg();
@@ -179,7 +163,7 @@ test.describe("Management User Test  - Add New User", () => {
         console.log("Testing existed username...");
         const existedUsername = loginTestData.validCredentials.admin.username;
         await managementUserPage.fillUserName(
-          "addUserSection",
+          "editUserSection",
           existedUsername
         );
         const errorMessage = await managementUserPage.getFieldErrorMsg();
@@ -189,17 +173,9 @@ test.describe("Management User Test  - Add New User", () => {
       });
     });
     test.describe("Password Validation", () => {
-      test("Validation on empty password", async ({ page }) => {
-        console.log("Testing empty password validation...");
-        await managementUserPage.createNewUser(
-          `InvalidUser_${Date.now()}`,
-          registrationInfo.newUserInformation.employee.role,
-          registrationInfo.newUserInformation.employee.status,
-          registrationInfo.newUserInformation.employee.employeeName,
-          "",
-          ""
-        );
-
+      test("Validation on empty password", async () => {
+        await managementUserPage.toggleChangePassword(true);
+        await managementUserPage.clickSaveBtn("editUserSection");
         const errorMessages = await managementUserPage.getPasswordFieldErrorMsg(
           ConstantSetting.hardTimeout
         );
@@ -213,9 +189,12 @@ test.describe("Management User Test  - Add New User", () => {
       });
 
       test("Validation on invalid password - min length", async ({}) => {
-        console.log("Testing invalid password validation - min length...");
-        const invalidPassword = "short";
-        await managementUserPage.fillPassword("addUserSection",invalidPassword);
+        const invalidPassword = passwordData.minLength;
+        await managementUserPage.toggleChangePassword(true);
+        await managementUserPage.fillPassword(
+          "editUserSection",
+          invalidPassword
+        );
         const errorMessages = await managementUserPage.getPasswordFieldErrorMsg(
           ConstantSetting.hardTimeout
         );
@@ -225,9 +204,12 @@ test.describe("Management User Test  - Add New User", () => {
         );
       });
       test("Validation on invalid password - miss number", async ({}) => {
-        console.log("Testing invalid password validation - miss number...");
-        const invalidPassword = "missingNumber";
-        await managementUserPage.fillPassword("addUserSection",invalidPassword);
+        const invalidPassword = passwordData.missingNumber;
+        await managementUserPage.toggleChangePassword(true);
+        await managementUserPage.fillPassword(
+          "editUserSection",
+          invalidPassword
+        );
         const errorMessages = await managementUserPage.getPasswordFieldErrorMsg(
           ConstantSetting.hardTimeout
         );
@@ -237,10 +219,12 @@ test.describe("Management User Test  - Add New User", () => {
         );
       });
       test("Validation on invalid password - miss upper", async ({}) => {
-        console.log("Testing invalid password validation - miss upper...");
-
-        const invalidPassword = "admin@1234";
-        await managementUserPage.fillPassword("addUserSection",invalidPassword);
+        const invalidPassword = passwordData.missingUpperCase;
+        await managementUserPage.toggleChangePassword(true);
+        await managementUserPage.fillPassword(
+          "editUserSection",
+          invalidPassword
+        );
         const errorMessages = await managementUserPage.getPasswordFieldErrorMsg(
           ConstantSetting.hardTimeout
         );
@@ -250,10 +234,12 @@ test.describe("Management User Test  - Add New User", () => {
         );
       });
       test("Validation on invalid password - miss lower", async ({}) => {
-        console.log("Testing invalid password validation - miss lower...");
-
-        const invalidPassword = "ADMIN@1234";
-        await managementUserPage.fillPassword("addUserSection",invalidPassword);
+        const invalidPassword = passwordData.missingLowerCase;
+        await managementUserPage.toggleChangePassword(true);
+        await managementUserPage.fillPassword(
+          "editUserSection",
+          invalidPassword
+        );
         const errorMessages = await managementUserPage.getPasswordFieldErrorMsg(
           ConstantSetting.hardTimeout
         );
@@ -263,12 +249,12 @@ test.describe("Management User Test  - Add New User", () => {
         );
       });
       test("Validation on invalid password - miss special character", async ({}) => {
-        console.log(
-          "Testing invalid password validation- miss special character..."
+        const invalidPassword = passwordData.missingSpecChar;
+        await managementUserPage.toggleChangePassword(true);
+        await managementUserPage.fillPassword(
+          "editUserSection",
+          invalidPassword
         );
-
-        const invalidPassword = "Admin12345";
-        await managementUserPage.fillPassword("addUserSection",invalidPassword);
         const errorMessages = await managementUserPage.getPasswordFieldErrorMsg(
           ConstantSetting.hardTimeout
         );

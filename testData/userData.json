@@ -1,0 +1,25 @@
+{
+    "newUserInformation": {
+        "admin": {
+            "password": "Admin@1234",
+            "confirmPassword": "Admin@1234",
+            "role": "Admin",
+            "status": "Enabled",
+            "employeeName": "Tham Nguyen"
+        },
+        "employee": {
+            "password": "Admin@1234",
+            "confirmPassword": "Admin@1234",
+            "role": "ESS",
+            "status": "Enabled",
+            "employeeName": "Tham Nguyen"
+        }
+    },
+    "updateUserInformation": {
+        "password": "Admin@1234",
+        "confirmPassword": "Admin@1234",
+        "role": "ESS",
+        "status": "Disabled",
+        "employeeName": "Tham Nguyen"
+    }
+}

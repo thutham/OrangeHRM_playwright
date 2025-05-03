@@ -6,7 +6,7 @@ const { createAdminUserOnDB,deleteAdminUserOnDB } = require("../../../utils/dbHe
 // Test Data
 const loginTestData = require("../../../testData/loginData.json");
 
-test.describe.only("Management User Test  - Delete User", () => {
+test.describe("Management User Test  - Delete User", () => {
   let loginPage, managementUserPage, userName, password;
 
   // Setup before each test
