@@ -54,10 +54,21 @@ class UserManagementPage extends AdminIndexPage {
       cancelButton: page.locator('button[type="button"]'),
     };
     this.UserTableSection = {
-      userTable: page.locator(".oxd-table"),
+      userTable: page.locator(".orangehrm-container"),
       selectAll: page.locator(".bi-dash .oxd-checkbox-input-icon"),
       userRow: page.locator("//div[contains(@class, 'oxd-table-row')]"),
-      deleteBtn: page.locator(".oxd-icon bi-trashN"),
+      allUserNames: page.locator(
+        "//div[contains(@class, 'oxd-table-row')]//div[2]"
+      ),
+      allUserRoles: page.locator(
+        "//div[contains(@class, 'oxd-table-row')]//div[3]"
+      ),
+      allUserEmployeeNames: page.locator(
+        "//div[contains(@class, 'oxd-table-row')]//div[4]"
+      ),
+      allUserStatus: page.locator(
+        "//div[contains(@class, 'oxd-table-row')]//div[5]"
+      ),
     };
     this.deletePopup = {
       cancelBtn: page.locator('button:has-text("No, Cancel")'),
@@ -100,6 +111,49 @@ class UserManagementPage extends AdminIndexPage {
     expect(role).toBe(expectRole);
     expect(employeeName).toBe(expectEmployeeName);
     expect(status).toBe(expectStatus);
+  }
+  async getAllUsernames() {
+    await this.UserTableSection.allUserNames.first().waitFor({ state: "visible" });
+    const allValues = await this.UserTableSection.allUserNames.allInnerTexts();
+    const allUsernames = allValues.slice(1);
+    if (allUsernames.length === 0) {
+      return [];
+    }
+    return allUsernames;
+  }
+  async getAllUserRoles() {
+    await this.UserTableSection.allUserRoles
+      .first()
+      .waitFor({ state: "visible" });
+    const allValues = await this.UserTableSection.allUserRoles.allInnerTexts();
+    const allUserRoles = allValues.slice(1);
+    if (allUserRoles.length === 0) {
+      return [];
+    }
+    return allUserRoles;
+  }
+  async getAllUserStatus() {
+    await this.UserTableSection.allUserStatus
+      .first()
+      .waitFor({ state: "visible" });
+    const allValues = await this.UserTableSection.allUserStatus.allInnerTexts();
+    const allUserStatus = allValues.slice(1);
+    if (allUserStatus.length === 0) {
+      return [];
+    }
+    return allUserStatus;
+  }
+  async getAllEmployeeNames() {
+    await this.UserTableSection.allUserEmployeeNames
+      .first()
+      .waitFor({ state: "visible" });
+    const allValues =
+      await this.UserTableSection.allUserEmployeeNames.allInnerTexts();
+    const allEmployeeNames = allValues.slice(1);
+    if (allEmployeeNames.length === 0) {
+      return [];
+    }
+    return allEmployeeNames;
   }
   //User Form
   async fillUserName(section, userName) {
@@ -180,6 +234,10 @@ class UserManagementPage extends AdminIndexPage {
         `Failed to retrieve password error message: ${error.message}`
       );
     }
+  }
+  //Search
+  async clickSearchBtn() {
+    await this.searchHeader.searchBtn.click();
   }
   //Delete User
   async clickDeleteBtn(userName) {

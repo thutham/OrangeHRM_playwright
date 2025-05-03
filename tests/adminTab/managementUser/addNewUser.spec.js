@@ -8,6 +8,7 @@ const { ConstantSetting } = require("../../../constant/constantSetting");
 // Test Data
 const loginTestData = require("../../../testData/loginData.json");
 const registrationInfo = require("../../../testData/userData.json");
+const passwordData = require("../../../testData/passwordData.json");
 
 test.describe("Management User Test  - Add New User", () => {
   let loginPage, managementUserPage;
@@ -89,7 +90,7 @@ test.describe("Management User Test  - Add New User", () => {
   });
   test.describe("Fields Validation", { tags: ["validation-case"] }, () => {
     test.describe("User Role Validation", () => {
-      test("Validation on empty user role", async ({ page }) => {
+      test("Validation on empty user role", async () => {
         console.log("Testing empty username validation...");
         await managementUserPage.createNewUser(
           `InvalidUser_${Date.now()}`,
@@ -147,7 +148,7 @@ test.describe("Management User Test  - Add New User", () => {
       });
     });
     test.describe("UserName Validation", () => {
-      test("Validation on empty password", async ({ page }) => {
+      test("Validation on empty password", async () => {
         console.log("Testing empty username validation...");
         await managementUserPage.createNewUser(
           "",
@@ -213,8 +214,7 @@ test.describe("Management User Test  - Add New User", () => {
       });
 
       test("Validation on invalid password - min length", async ({}) => {
-        console.log("Testing invalid password validation - min length...");
-        const invalidPassword = "short";
+        const invalidPassword = passwordData.minLength;
         await managementUserPage.fillPassword("addUserSection",invalidPassword);
         const errorMessages = await managementUserPage.getPasswordFieldErrorMsg(
           ConstantSetting.hardTimeout
@@ -225,8 +225,7 @@ test.describe("Management User Test  - Add New User", () => {
         );
       });
       test("Validation on invalid password - miss number", async ({}) => {
-        console.log("Testing invalid password validation - miss number...");
-        const invalidPassword = "missingNumber";
+        const invalidPassword = passwordData.missingNumber;
         await managementUserPage.fillPassword("addUserSection",invalidPassword);
         const errorMessages = await managementUserPage.getPasswordFieldErrorMsg(
           ConstantSetting.hardTimeout
@@ -237,9 +236,7 @@ test.describe("Management User Test  - Add New User", () => {
         );
       });
       test("Validation on invalid password - miss upper", async ({}) => {
-        console.log("Testing invalid password validation - miss upper...");
-
-        const invalidPassword = "admin@1234";
+        const invalidPassword = passwordData.missingUpperCase;
         await managementUserPage.fillPassword("addUserSection",invalidPassword);
         const errorMessages = await managementUserPage.getPasswordFieldErrorMsg(
           ConstantSetting.hardTimeout
@@ -252,7 +249,7 @@ test.describe("Management User Test  - Add New User", () => {
       test("Validation on invalid password - miss lower", async ({}) => {
         console.log("Testing invalid password validation - miss lower...");
 
-        const invalidPassword = "ADMIN@1234";
+        const invalidPassword = passwordData.missingLowerCase;
         await managementUserPage.fillPassword("addUserSection",invalidPassword);
         const errorMessages = await managementUserPage.getPasswordFieldErrorMsg(
           ConstantSetting.hardTimeout
@@ -263,11 +260,7 @@ test.describe("Management User Test  - Add New User", () => {
         );
       });
       test("Validation on invalid password - miss special character", async ({}) => {
-        console.log(
-          "Testing invalid password validation- miss special character..."
-        );
-
-        const invalidPassword = "Admin12345";
+        const invalidPassword = passwordData.missingSpecChar;
         await managementUserPage.fillPassword("addUserSection",invalidPassword);
         const errorMessages = await managementUserPage.getPasswordFieldErrorMsg(
           ConstantSetting.hardTimeout

@@ -3,6 +3,7 @@ const ToastMessage = {
     deleteUserFail: "Cannot be deleted",
     updateUserSuccess: "Successfully Updated",
     createUseruccess: "Successfully Saved",
+    noRecord:"No Records found",
   };
   
   module.exports = { ToastMessage };

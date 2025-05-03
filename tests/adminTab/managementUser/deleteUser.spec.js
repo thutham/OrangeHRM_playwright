@@ -25,7 +25,7 @@ test.describe("Management User Test  - Delete User", () => {
     await managementUserPage.navigateToUsers();
     await page.waitForLoadState("load");
   });
-  test.describe("Delete Fail",()=>{
+  test.describe("Delete Fail", { tags: ["happy-case"] },()=>{
     test("Verify cannot delete myself", async () => {
         await test.step("Delete myselft", async () => {
           await managementUserPage.clickDeleteBtn(loginTestData.validCredentials.admin.username);
@@ -40,7 +40,7 @@ test.describe("Management User Test  - Delete User", () => {
       });
 
   });
-  test.describe("Delete success/Cancel",()=>{
+  test.describe("Delete success/Cancel", { tags: ["happy-case"] },()=>{
     test.beforeEach(async ({ page }) => {
         userName = `ThamAdmin_${Date.now()}`;
         password = "Admin@1234";
